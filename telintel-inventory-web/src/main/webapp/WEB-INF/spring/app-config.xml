@@ -60,12 +60,6 @@
     <mvc:resources mapping="/app/**" location="/app/"/>
     <mvc:resources mapping="/assets/**" location="/webjars/"/>
     <mvc:resources mapping="/img/**" location="/img/"/>
-  <!-- <mvc:resources mapping="/css/**" location="/css/"/>
-    <mvc:resources mapping="/img/**" location="/img/"/>
-    <mvc:resources mapping="/js/**" location="/js/"/>
-	 -->  
-	 
-	 <context:property-placeholder location="classpath:telintel-inventory-web.properties" />
-	 
+  
 	 
 </beans>

@@ -6,27 +6,30 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
- 
-
 import org.springframework.security.core.userdetails.User;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 
- 
+/**
+ * This Controller POJO manager three pages; loginPage.jsp, Inventory.jsp and
+ * multiUpload.jsp
+ * 
+ * @author Freddy Lemus
+ *
+ */
 @Controller
 public class ServiceControllerPage {
-	
+
 	private static final Logger logger = Logger.getLogger(ServiceControllerPage.class);
 
-	
-	@Value( "${maxFileUpdate}" )
+	@Value("${maxFileUpdate}")
 	private String maxFileUpdate;
-	
-	
+
 	/**
 	 * Validate the page's error
+	 * 
 	 * @param error
 	 * @param logout
 	 * @return
@@ -51,7 +54,6 @@ public class ServiceControllerPage {
 
 	}
 
-	
 	/**
 	 * Obtain the user's information and show inventory page
 	 *
@@ -60,7 +62,7 @@ public class ServiceControllerPage {
 	@RequestMapping(value = { "/inventory**" }, method = RequestMethod.GET)
 	public ModelAndView adminPage() {
 
-		ModelAndView model = new ModelAndView(); 
+		ModelAndView model = new ModelAndView();
 		try {
 
 			User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -77,26 +79,21 @@ public class ServiceControllerPage {
 		return model;
 
 	}
-	
-	
+
 	/**
-	 * Show page upload page and load the Maximum  files 
+	 * Show upload page and load 
 	 * 
 	 * @return
 	 */
 	@RequestMapping(value = "/multiUpload", method = RequestMethod.GET)
-	public ModelAndView getMultiUploadPage() { 
-		
+	public ModelAndView getMultiUploadPage() {
+
 		ModelAndView model = new ModelAndView();
-		
-		// this field should be parameterized
-		logger.info("max files" + maxFileUpdate );
-		model.addObject("maxFiles",maxFileUpdate); 
-		
+
+		// this field should be parameterized 
+
 		model.setViewName("multiFileUploader");
 		return model;
 	}
-	 
-
 
 }

@@ -18,9 +18,10 @@
 
 <title>Telintel SAS Test Product Inventory.....</title>
  
-<link rel="stylesheet" href='./css/style.css'>
+
 <link rel="stylesheet"
 	href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<link rel="stylesheet" href='./css/style.css'>
 <!--  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
   -->
@@ -41,7 +42,7 @@
 </head>
 <body>
 
-	<div class="uploadPage" align="center">
+	<div   align="center">
 		<form id="fileupload" method="POST" enctype="multipart/form-data"
 			data-ng-app="multiUploadTelintel"
 			data-ng-controller="MultiUploadTelintel" data-file-upload="options"
@@ -101,10 +102,12 @@
 			</div>
 			<table class="tableInventary" >
 				<caption></caption>
-				<tr>
+				<tr ng-hide="queue.length < 1" >
 					<th><spring:message code="msg.label.name" /></th>
 					<th><spring:message code="msg.label.nesame" /></th>
-					<th  colspan="3" ><spring:message code="msg.label.detail" /></th>
+					<th><spring:message code="msg.label.detail" /></th>
+					<th><spring:message code="msg.label.size" /></th>
+					<th><spring:message code="msg.label.option" /></th>
 					
 				</tr>
 				<tr  data-ng-repeat="file in queue"
@@ -142,7 +145,7 @@
 					</td>
 
 
-					<td data-label='<spring:message code="msg.label.detail" />' >
+					<td data-label='<spring:message code="msg.label.size" />' >
 						<p class="size">{{file.size | formatFileSize}}</p>
 						<div class="progress progress-striped active fade"
 							data-ng-class="{pending: 'in'}[file.$state()]"
@@ -153,7 +156,7 @@
 					</td>
 
 
-					<td data-label='<spring:message code="msg.label.detail" />' >
+					<td data-label='<spring:message code="msg.label.option" />' >
 
 						<button type="button" class="btn btn-warning cancel"
 							data-ng-click="file.$cancel()"
