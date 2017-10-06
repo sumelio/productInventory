@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS `processFile` (
   `nameThread` VARCHAR(255) NOT NULL,
   `startDate` timestamp NULL,
   `endDate` timestamp  NULL,
-  `status` VARCHAR(255) NOT NULL,
+  `status` VARCHAR(255)NULL,
   `totalProducts` INT  NULL, 
     PRIMARY KEY (`id`)
   );
