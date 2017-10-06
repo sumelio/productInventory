@@ -21,9 +21,9 @@ import net.telintel.inventory.test.file.model.dao.ModelManagerDAO;
 import net.telintel.inventory.test.file.util.FileManager;
 import net.telintel.inventory.test.file.util.FileUtil;
 
-
 /**
- * This Bean implement all logic in order to load and register product information from files
+ * This Bean implement all logic in order to load and register product
+ * information from files
  * 
  * @author Freddy Lemus
  *
@@ -37,23 +37,17 @@ public class BusinessExecuteBean {
 
 	@Autowired
 	private NotifyClientBean notifyClient;
-	
- 
-
 
 	/**
 	 * Package limit of batch
 	 * 
 	 */
 	private static final int LIMIT_BATCH = 1000;
-	
-	
+
 	/**
-	 * Execute the necessary steps in order to read, insert in BD and notification the load
-	 * of the files. THe main steps are;
-	 * 1. Read
-	 * 2. Register in BD
-	 * 3. Notification 'notfy topic' 
+	 * Execute the necessary steps in order to read, insert in BD and notification
+	 * the load of the files. THe main steps are; 1. Read 2. Register in BD 3.
+	 * Notification 'notfy topic'
 	 * 
 	 * @param names
 	 * @param listfiles
@@ -65,7 +59,7 @@ public class BusinessExecuteBean {
 
 		ExecutorService executor = Executors.newFixedThreadPool(names.length);
 
-		Arrays.asList(names).forEach((name) -> { 
+		Arrays.asList(names).forEach((name) -> {
 			File file_ = new File();
 			file_.setNameNew(FileUtil.formatNewName(name));
 			file_.setPath(path + file_.getNameNew());
@@ -77,62 +71,64 @@ public class BusinessExecuteBean {
 				Thread.currentThread().setName("Thread_" + name);
 				logger.info(":::::" + Thread.currentThread().getName() + " is running ");
 				ProcessFile processFile = new ProcessFile(file_, Thread.currentThread());
-				
 
 				// Step 2. Read file
 				modelManagerDAO.insertProcess(processFile);
-				
-				processFile.setStatus(Status.READ_FILE_OK);
-				modelManagerDAO.updateProcess(processFile);
-				FileManager fileManager = new FileManager();
-				fileManager.readProducsFromFile(file_);
-				
-				processFile.setStatus(Status.READ_FILE_OK);
-				modelManagerDAO.updateProcess(processFile);
-				
-				if (processFile.isOKReadProduct()) {
-					
-					processFile.setStatus(Status.DATA_BASE_PROCESSING);
+
+
+				synchronized (this) {
+					processFile.setStatus(Status.READ_FILE_PROCESSING);
 					modelManagerDAO.updateProcess(processFile);
 					
-					// Step 3. Insert DataBase
-					this.createProductBatch(processFile, fileManager.getListProduct());;
+					FileManager fileManager = new FileManager();
+					fileManager.readProducsFromFile(file_);
 
-					if (processFile.isOKInsertDBProduct()) {
-				
+					processFile.setStatus(Status.READ_FILE_OK);
+					modelManagerDAO.updateProcess(processFile);
 
-						// Step 4. Notify
-						// StompSession stompSession = notifyClient.getSession();
-						notifyClient.getSession();
-						int totalStock = modelManagerDAO.getProductTotalStock();
-						processFile.setTotalStock(totalStock);
-						
-						processFile.setStatus(Status.NOFITY_SENT_PROCESSING);
-						modelManagerDAO.updateProcess(processFile); 
-						
-						if ( notifyClient.isConnected()) {
-							
-							
-							notifyClient.sendMessage(processFile.getMessageFormatJson());
-                            
-							processFile.setStatus(Status.NOFITY_SENT_OK);
+					if (processFile.isOKReadProduct()) {
+
+						processFile.setStatus(Status.DATA_BASE_PROCESSING);
+						modelManagerDAO.updateProcess(processFile);
+
+						// Step 3. Insert DataBase
+						this.createProductBatch(processFile, fileManager.getListProduct());
+						;
+
+						if (processFile.isOKInsertDBProduct()) {
+
+							// Step 4. Notify
+							// StompSession stompSession = notifyClient.getSession();
+							notifyClient.getSession();
+							int totalStock = modelManagerDAO.getProductTotalStock();
+							processFile.setTotalStock(totalStock);
+
+							processFile.setStatus(Status.NOFITY_SENT_PROCESSING);
 							modelManagerDAO.updateProcess(processFile);
-							notifyClient.getSession().disconnect();
-						}else {
-							processFile.setStatus(Status.NOFITY_SENT_ERROR);
-							modelManagerDAO.updateProcess(processFile);
-							notifyClient.getSession().disconnect();
-						} 
-						
+
+							if (notifyClient.isConnected()) {
+
+								notifyClient.sendMessage(processFile.getMessageFormatJson());
+
+								processFile.setStatus(Status.NOFITY_SENT_OK);
+								modelManagerDAO.updateProcess(processFile);
+								
+
+							} else {
+								processFile.setStatus(Status.NOFITY_SENT_ERROR);
+								modelManagerDAO.updateProcess(processFile); 
+							}
+
+						} else {
+							processFile.setStatus(Status.DATA_BASE_ERROR);
+						}
+						modelManagerDAO.updateProcess(processFile);
 
 					} else {
-						processFile.setStatus(Status.DATA_BASE_ERROR);
+						processFile.setStatus(Status.READ_FILE_ERROR);
+
 					}
-					modelManagerDAO.updateProcess(processFile);
-
-				} else {
-					processFile.setStatus(Status.READ_FILE_ERROR);
-
+					this.notifyAll();
 				}
 				modelManagerDAO.updateProcess(processFile);
 
@@ -146,7 +142,7 @@ public class BusinessExecuteBean {
 		);
 		notifyClient.getSession().disconnect();
 		logger.info(notifyClient.getSession() + " is closing session webSocket ");
-      
+		
 		executor.shutdown(); // CLose Executor
 
 		// while (!executor.isTerminated()) {
@@ -154,7 +150,6 @@ public class BusinessExecuteBean {
 		// }
 
 	}
-	
 
 	/**
 	 * Implement the logic in order to create all product in the data base. The
@@ -180,14 +175,17 @@ public class BusinessExecuteBean {
 					if (i % LIMIT_BATCH == 0) {
 						// Do this each LIMIT_BATCH
 						modelManagerDAO.createProductBatch(subListtProduct);
-						subListtProduct  = new ArrayList<Product>(); 
+						subListtProduct = new ArrayList<Product>();
 					}
+					//logger.info("......Num " + (i / LIMIT_BATCH) + " of " + listProduct.size() / LIMIT_BATCH);
+					logger.info(".");
 				}
-                
+
 				// The list < LIMIT_BATCH
 				if (!subListtProduct.isEmpty()) {
 					modelManagerDAO.createProductBatch(subListtProduct);
 				}
+				this.notifyAll();
 			}
 
 			processFile.setStatus(Status.DATA_BASE_OK);

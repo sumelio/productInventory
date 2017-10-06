@@ -159,7 +159,11 @@ public class ProcessFile {
 	  
 	  
 	public String getStartTime() {
-		return FileUtil.simpleDateFormat.format(this.getStart()) ;
+		String endTime = "";
+		if(this.getStart() != null) {
+			 endTime = FileUtil.simpleDateFormat.format(this.getStart()) ;
+		}
+		return endTime;
 	}
 
 	public void setStartTime(String startTime) {
@@ -167,7 +171,11 @@ public class ProcessFile {
 	}
 
 	public String getEndTime() {
-		return FileUtil.simpleDateFormat.format(this.getEnd()) ;
+		String endTime = "";
+		if(this.getEnd() != null) {
+			 endTime = FileUtil.simpleDateFormat.format(this.getEnd()) ;
+		}
+		return endTime;
 	}
 
 	public void setEndTime(String endTime) {

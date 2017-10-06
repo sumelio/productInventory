@@ -60,7 +60,7 @@ public class FileManager {
 	
 	public File readProducsFromFile(File  file) { 
 		  this.file = file;
-
+   
 		try {
 
 			java.io.File diskFile = new java.io.File(this.file.getPath());

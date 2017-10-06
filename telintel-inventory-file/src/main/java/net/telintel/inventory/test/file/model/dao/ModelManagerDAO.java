@@ -143,10 +143,10 @@ public class ModelManagerDAO {
 					.addValue("product_type_id", product.getProductType().getId()).getValues());
 
 		});
-		logger.info("Before Batch .......................................");
+		//logger.info("Before Batch .......................................");
 		int[] updateCounts = namedParamJdbcTemplate.batchUpdate(sql, batchValues.toArray(new Map[listProdcuts.size()]));
 	 
-		logger.info("After Batch .......................................updateCounts " + updateCounts.length);
+		//logger.info("After Batch .......................................updateCounts " + updateCounts.length);
 	    return updateCounts;
 	
 	}
